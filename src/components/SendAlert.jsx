@@ -6,30 +6,24 @@ const SendAlert = () => {
   const [locationName, setLocationName] = useState("");
   const [isFetchingLocation, setIsFetchingLocation] = useState(false);
 
-  
   useEffect(() => {
     const fetchContacts = async () => {
-      const token = localStorage.getItem("token");  
-      if (!token) {
-        alert("Authorization token missing.");
-        return;
-      }
-
-      const response = await fetch("http://localhost:5000/api/contacts", {
-        headers: { Authorization: token },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setContacts(data.contacts || []);
-      } else {
-        alert("Failed to fetch contacts.");
+      try {
+        const response = await fetch("http://localhost:5000/api/contacts");
+        if (response.ok) {
+          const data = await response.json();
+          setContacts(data.contacts || []);
+        } else {
+          alert("Failed to fetch contacts.");
+        }
+      } catch (error) {
+        console.error("Error fetching contacts:", error);
+        alert("Error fetching contacts.");
       }
     };
 
     fetchContacts();
   }, []);
-
 
   const fetchLocation = async () => {
     setIsFetchingLocation(true);
@@ -60,42 +54,42 @@ const SendAlert = () => {
       alert("Fetching location. Please wait...");
       await fetchLocation();
     }
-  
+
     const groupContacts = contacts.filter((c) => c.group === selectedGroup);
-    const alertText = `Emergency alert from ${selectedGroup}. Location: ${locationName}`;
-  
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("No token found. Please log in.");
+
+    if (groupContacts.length === 0) {
+      alert(`No contacts found in ${selectedGroup} group.`);
       return;
     }
-  
+
     try {
       const response = await fetch("http://localhost:5000/api/send-alert", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: token,  
         },
         body: JSON.stringify({
-          group: selectedGroup,  
-          location: locationName, 
+          group: selectedGroup,
+          location: locationName,
+          contacts: groupContacts.map((contact) => ({
+            name: contact.name,
+            phone: contact.phone,
+          })),
         }),
       });
-  
+
       if (response.ok) {
         alert("Emergency alert sent successfully!");
       } else {
         const errorData = await response.json();
-        console.error("Error sending alert:", errorData);  
-        alert(`Failed to send emergency alert: ${errorData.message || 'Unknown error'}`);
+        console.error("Error sending alert:", errorData);
+        alert(`Failed to send emergency alert: ${errorData.message || "Unknown error"}`);
       }
     } catch (error) {
       console.error("Error sending alert:", error);
       alert("Error sending alert.");
     }
   };
-  
 
   return (
     <div className="alert-page-container">
@@ -121,7 +115,9 @@ const SendAlert = () => {
           <p>
             <strong>Current Location:</strong> {locationName || "Not fetched yet"}
           </p>
-          <button onClick={handleSendAlert} className="send-alert-button">Send Alert</button>
+          <button onClick={handleSendAlert} className="send-alert-button">
+            Send Alert
+          </button>
         </div>
       </div>
     </div>
