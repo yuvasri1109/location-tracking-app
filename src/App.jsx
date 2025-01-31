@@ -1,30 +1,27 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./components/Home";
-import Login from "./components/Login"; // Import Login component
-import Dashboard from "./components/Dashboard"; // Import Dashboard component
+import Login from "./components/Login"; 
+import Dashboard from "./components/Dashboard"; 
 import ViewLocation from "./components/ViewLocation";
 import EmergencyContacts from "./components/EmergencyContacts";
 import SendAlert from "./components/SendAlert";
-import SOSButton from "./components/SOSButton"; // Import SOSButton
+import SOSButton from "./components/SOSButton";
 import "./index.css";
 
 const App = () => {
   const handleSOSClick = () => {
-    // Vibration feedback
+
     if ("vibrate" in navigator) {
       navigator.vibrate([200, 100, 200]);
     }
 
-    // Play sound alert
     const alertSound = new Audio("/alert-sound.mp3");
     alertSound.play();
 
-    // Additional logic for SOS functionality
     alert("SOS alert triggered! Take immediate action.");
   };
 
-  // Check if user is logged in (can check for token or other stored data)
   const isLoggedIn = localStorage.getItem("token");
 
   return (
